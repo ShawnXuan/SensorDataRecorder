@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.xuan.getacc;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

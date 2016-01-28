@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.xuan.getacc;
 
 import org.junit.Test;
 
