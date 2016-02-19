@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.os.Handler;
 
@@ -37,12 +38,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView rssi;
     Handler handler;
     boolean Running = true;
+    boolean Recording = false;
+    Button recordButton;// = (Button)findViewById(R.id.btnRecord);
 
     String filePath = "/sdcard/Test/";
     String fileName = "test.txt";
+    //File recordFile;
     String StrAcceleration, StrGyroscope, StrOrientation, StrRSSI;
     long currentTimeMillis;
-
+    private void initRecordFile(){
+        currentTimeMillis = System.currentTimeMillis();
+        fileName = "Sensor_"+currentTimeMillis+".txt";
+        writeTxtToFile("AX, AY, AZ, GX, GY, GZ, Time", filePath, fileName);//, Azimuth, Pitch, Roll
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +58,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        setupRecordButton();
         //initData();
-
-        writeTxtToFile("AX, AY, AZ, GX, GY, GZ, Time", filePath, fileName);//, Azimuth, Pitch, Roll
+        //writeTxtToFile("AX, AY, AZ, GX, GY, GZ, Time", filePath, fileName);//, Azimuth, Pitch, Roll
         //WifiManager wifi = (WifiManager) getSystemService(WIFI_SERVICE);
         rssi=(TextView)findViewById(R.id.rssi);
         handler = new Handler();
@@ -80,9 +87,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             }
                             rssi.setText(str);
                             //StrRSSI = r.level;
-                            currentTimeMillis = System.currentTimeMillis();
-                            StrRSSI=StrAcceleration+StrGyroscope+currentTimeMillis;//StrOrientation+
-                            writeTxtToFile(StrRSSI, filePath, fileName);
+                            if(Recording) {
+                                currentTimeMillis = System.currentTimeMillis();
+                                StrRSSI = StrAcceleration + StrGyroscope + currentTimeMillis;//StrOrientation+
+                                writeTxtToFile(StrRSSI, filePath, fileName);
+                            }
                         }
                     });
                 }
@@ -102,16 +111,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sm.registerListener(this, Orientation, SensorManager.SENSOR_DELAY_NORMAL);
         tvOrientation=(TextView)findViewById(R.id.txtOrientation);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void setupRecordButton(){
+        //1. Get a reference to the button
+        recordButton = (Button)findViewById(R.id.btnRecord);
+        ChangeRecordButtonText();
+        //2. Set the click listener to run my code
+        recordButton.setOnClickListener(new View.OnClickListener(){
+
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v){
+                Recording=!Recording;
+                ChangeRecordButtonText();
+                if(Recording){
+                    initRecordFile();
+                }
             }
         });
     }
-
+    private void ChangeRecordButtonText(){
+        if(Recording){
+            recordButton.setText("Stop & Save");
+        }
+        else{
+            recordButton.setText("Start recording");
+        }
+    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy){
         //
@@ -171,6 +197,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         writeTxtToFile("txt content", filePath, fileName);
     }*/
 
+    public void writeTxtToRecordFile(String strcontent){
+
+    }
     // 将字符串写入到文本文件中
     public void writeTxtToFile(String strcontent, String filePath, String fileName) {
         //生成文件夹之后，再生成文件，不然会出错
